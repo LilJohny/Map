@@ -7,13 +7,28 @@ import os
 import pickle
 
 
-def create_file_generator(file_path: str):
+def create_file_generator(file_path):
+    '''Function acts like generator for file reading
+    
+    Arguments:
+        file_path {str} -- filepath
+    '''
+
     with open(file_path, 'r') as file:
         for row in file:
             yield row
 
 
 def filter_valid_locations(base):
+    '''Function filter database and returns films with known coordinates
+    
+    Arguments:
+        base {list} -- database
+    
+    Returns:
+        list -- filtered database
+    '''
+
     file_path = os.sep.join([str(Path(os.getcwd()).parent), 'static_files', 'dictionary_coordinates.bin'])
     coordinates = pickle.load(open(file_path, 'rb'))
     base = list(map(lambda x: (x[0], x[1], x[2], strip_location(x[3])), base))
@@ -23,16 +38,45 @@ def filter_valid_locations(base):
 
 
 def select_year(base: list, year: int):
+    '''Function filter given database and returns database for particular year
+    
+    Arguments:
+        base {list} -- database
+        year {int} -- year
+    
+    Returns:
+        list -- filtered database
+    '''
+
     base = list(filter(lambda x: x[1].count(str(year)) == 1, base))
     return base
 
 
 def select_country(base, country):
+    '''Function filter given database and returns database for particular country
+    
+    Arguments:
+        base {list} --  database list
+        country {str} --  country
+    
+    Returns:
+        list -- filtered database
+    '''
+
     base = list(filter(lambda x: x[-1].count(country) == 1, base))
     return base
 
 
 def convert_to_list(base):
+    '''Function converts database from DataFrame to list
+    
+    Arguments:
+        base {pandas.DataFrame} -- base to convert
+    
+    Returns:
+        list -- converted base
+    '''
+
     movie_cl = base['movie'].values.tolist()
     year_cl = base['year'].values.tolist()
     add_info_cl = base['add_info'].values.tolist()
@@ -41,14 +85,32 @@ def convert_to_list(base):
     return converted_base
 
 
-def read_database_from_csv(file_name: str):
+def read_database_from_csv(file_name):
+    '''Function reads database from .csv file
+    
+    Arguments:
+        file_name {str} -- Database file name
+    
+    Returns:
+        pandas.DataFrame -- database DataFrame
+    '''
+
     base_df = pandas.read_csv(file_name, sep=',', error_bad_lines=False, encoding='utf-8', lineterminator='\n')
     if any(map(lambda x: x.count('\r') != 0, list(base_df.keys()))):
         base_df = base_df.rename(index=str, columns={key: key.replace('\r', '') for key in list(base_df.keys())})
     return base_df
 
 
-def read_database_from_list(file_name: str):
+def read_database_from_list(file_name):
+    '''Function reads database from .list file
+    
+    Arguments:
+        file_name {str} -- database file to read from
+    
+    Returns:
+        list -- list of rows from file
+    '''
+
     rows = []
     file_generator = create_file_generator(file_name)
     for _ in range(14):
@@ -62,14 +124,32 @@ def read_database_from_list(file_name: str):
     return rows
 
 
-def strip_title(title: str):
+def strip_title(title):
+    '''Function strips title to normal form
+    
+    Arguments:
+        title {str} -- title to strip
+    
+    Returns:
+        str -- stripped title
+    '''
+
     title = title.replace('#', '')
     title = title.replace('"', '')
     title = title.strip()
     return title
 
 
-def transform(base: list):
+def transform(base):
+    '''This function transforms base, read from .list file to normal form
+    
+    Arguments:
+        base {list} -- list of rows from file 
+    
+    Returns:
+        list -- Transfromed base(list of tuples)
+    '''
+
     transformed_base = []
     for row in base:
         is_episode = False

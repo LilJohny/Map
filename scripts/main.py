@@ -39,19 +39,13 @@ def main():
                           'the map, otherwise leave this blank: ')
         if limit != '':
             limit = int(limit)
-    second_layer = input('Select type of additional data to display: 1 to display population, 2 to display films heatmap: ')
-    while not (second_layer in ['1', '2']):
-        print('Choose number of appropriate range!')
-        second_layer = input('Select type of additional data to display: 1 to display population, 2 to display films heatmap: ')
-    second_layer = int(second_layer)
     result_file = input('Type name of map file:')
-    limit = limit if limit !='' else None
+    limit = limit if limit != '' else None
     if type_of_request == 1:
-        create_map(type_of_request, year, result_file, second_layer, limit)
+        create_map(type_of_request, year, result_file,  limit)
     elif type_of_request == 2:
-        create_map(type_of_request, country, result_file, second_layer, limit)
+        create_map(type_of_request, country, result_file, limit)
 
 
 if __name__ == '__main__':
-    print(Path(os.getcwd()).parent)
     main()
