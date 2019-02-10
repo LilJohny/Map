@@ -1,3 +1,4 @@
 folium==0.7.0
 pandas==0.24.1
 geocoder==1.38.1
+tqdm

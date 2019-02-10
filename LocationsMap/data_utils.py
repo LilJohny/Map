@@ -1,5 +1,10 @@
-from LocationsMap.entities import Film, Episode
+import pandas
 import re
+from entities import Episode, Film
+from pathlib import Path
+from location_utils import strip_location
+import os
+import pickle
 
 
 def create_file_generator(file_path: str):
@@ -8,12 +13,42 @@ def create_file_generator(file_path: str):
             yield row
 
 
-def select_year(base: list, year: int):
-    base = list(filter(lambda x: x.count('(' + str(year)) == 1, base))
+def filter_valid_locations(base):
+    file_path = os.sep.join([str(Path(os.getcwd()).parent), 'static_files', 'dictionary_coordinates.bin'])
+    coordinates = pickle.load(open(file_path, 'rb'))
+    base = list(map(lambda x: (x[0], x[1], x[2], strip_location(x[3])), base))
+    base = list(filter(
+        lambda x: x[-1] is not None and coordinates.get(x[-1]) is not None and coordinates[x[-1]] is not None, base))
     return base
 
 
-def read_database(file_name: str):
+def select_year(base: list, year: int):
+    base = list(filter(lambda x: x[1].count(str(year)) == 1, base))
+    return base
+
+
+def select_country(base, country):
+    base = list(filter(lambda x: x[-1].count(country) == 1, base))
+    return base
+
+
+def convert_to_list(base):
+    movie_cl = base['movie'].values.tolist()
+    year_cl = base['year'].values.tolist()
+    add_info_cl = base['add_info'].values.tolist()
+    locations_cl = base['location'].values.tolist()
+    converted_base = list(zip(movie_cl, year_cl, add_info_cl, locations_cl))
+    return converted_base
+
+
+def read_database_from_csv(file_name: str):
+    base_df = pandas.read_csv(file_name, sep=',', error_bad_lines=False, encoding='utf-8', lineterminator='\n')
+    if any(map(lambda x: x.count('\r') != 0, list(base_df.keys()))):
+        base_df = base_df.rename(index=str, columns={key: key.replace('\r', '') for key in list(base_df.keys())})
+    return base_df
+
+
+def read_database_from_list(file_name: str):
     rows = []
     file_generator = create_file_generator(file_name)
     for _ in range(14):
@@ -57,5 +92,3 @@ def transform(base: list):
             film = Film(title_name=title, location=location, year=year, coordinates=None)
             transformed_base.append(film)
     return transformed_base
-
-
